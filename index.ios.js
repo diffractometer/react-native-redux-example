@@ -1,38 +1,97 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- */
 'use strict';
 
 import React, { PropTypes } from 'react-native'
+import { connect, Provider } from 'react-redux/native'
+import expect from 'expect'
 import { createStore } from 'redux'
+
 var {
   AppRegistry,
   StyleSheet,
   Text,
   View,
+  TouchableHighlight
 } = React;
 
-const counter = (state = 0, action) => {
-  switch (action.type) {
-    case 'increase':
-    default:
-      return state;
+class Counter extends React.Component {
+  render () {
+    const { value, onIncreaseClick, onDecreaseClick } = this.props
+    return (
+      <View style={styles.container}>
+        <Text style={styles.instructions}>
+          Click on a button to increase or decrease the 
+          value.
+        </Text>
+        <TouchableHighlight
+          style={styles.button}
+          onPress={onIncreaseClick}
+          underlayColor="white">
+          <Text style={styles.buttonText}>+</Text>
+        </TouchableHighlight>
+        <TouchableHighlight
+          style={styles.button}
+          onPress={onDecreaseClick}
+          underlayColor="white">
+          <Text style={styles.buttonText}>-</Text>
+        </TouchableHighlight>
+        <Text style={styles.clicks}>
+          Clicks: { value }
+        </Text>
+      </View>
+    )
   }
 }
 
-var eggheadRedux = React.createClass({
-  render: function() {
-    console.log("main component");
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Redux Egghead Tutorial 
-        </Text>
-      </View>
-    );
+// Actions
+const incrementAction = {type: 'INCREMENT'}
+const decrementAction = {type: 'DECREMENT'}
+
+// Reducer
+function counter (state = {count: 0}, action) {
+  let count = state.count
+  switch (action.type) {
+    case 'INCREMENT':
+      return {count: count + 1}
+    case 'DECREMENT':
+      return {count: count - 1}
+    default:
+      return state
   }
-});
+}
+
+// holds state, lets you dispatch actions
+let store = createStore(counter);
+
+// Map Redux state to component props
+function mapStateToProps (state) {
+  return {
+    value: state.count
+  }
+}
+
+// Map Redux actions to component props
+function mapDispatchToProps (dispatch) {
+  return {
+    onIncreaseClick: () => dispatch(incrementAction),
+    onDecreaseClick: () => dispatch(decrementAction)
+  }
+}
+
+// Connected Component
+let App = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Counter)
+
+class eggheadRedux extends React.Component {
+  render () {
+    return (
+      <Provider store={store}>
+        {() => <App />}
+      </Provider>
+    )
+  }
+}
 
 var styles = StyleSheet.create({
   container: {
@@ -43,7 +102,7 @@ var styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#888'
   },
-  welcome: {
+  clicks: {
     marginBottom: 20,
     fontSize: 25,
     textAlign: 'center',
@@ -53,6 +112,23 @@ var styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333333',
     marginBottom: 5,
+  },
+  buttonText: {
+    fontSize: 18,
+    color: '#111',
+    alignSelf: 'center'
+  },
+  button: {
+    height: 45,
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    borderColor: 'white',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 10,
+    marginTop: 10,
+    alignSelf: 'stretch',
+    justifyContent: 'center'
   },
 });
 
