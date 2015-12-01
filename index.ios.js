@@ -16,6 +16,7 @@ var {
 class Counter extends React.Component {
   render () {
     const { value, onIncreaseClick, onDecreaseClick } = this.props
+    console.log("~~~> ", this.props)
     return (
       <View style={styles.container}>
         <Text style={styles.instructions}>
@@ -46,8 +47,57 @@ class Counter extends React.Component {
 const incrementAction = {type: 'INCREMENT'}
 const decrementAction = {type: 'DECREMENT'}
 
+
+
+// todo reducer
+function todo (state = [], action) {
+  switch (action.type) {
+    case 'ADD_TODO':
+      return {
+        id: action.id,
+        text: action.text,
+        completed: false
+      };
+    case 'TOGGLE_TODO':
+      if (state.id !== action.id) {
+        return state;
+      }
+      return {
+        ...state,
+        completed: !state.completed
+      };
+    default: 
+      return state;
+  }
+}
+// todos reducer (a pure function to implement update action)
+function todos (state = [], action) {
+  switch (action.type) {
+    case 'ADD_TODO':
+      return [
+        ...state,
+        todo(undefined, action) 
+      ];
+    case 'TOGGLE_TODO':
+      return state.map(t => todo(t, action));
+    default:
+      return state;
+  }
+};
+
+function visibilityFilter (state = 'SHOW_ALL', action) {
+  switch (action.type) {
+    case 'SET_VISIBILITY_FILTER':
+      return action.filter;
+    default:
+      return state;
+  }
+};
+
 // Reducer
 function counter (state = {count: 0}, action) {
+  console.log("state: ", state)
+  console.log("action: ", action)
   let count = state.count
   switch (action.type) {
     case 'INCREMENT':
@@ -59,47 +109,22 @@ function counter (state = {count: 0}, action) {
   }
 }
 
-// todo reducer (a pure function to implement update action)
-function todos (state = [], action) {
-  switch (action.type) {
-    case 'ADD_TODO':
-      return [
-        ...state,
-        {
-          id: action.id,
-          text: action.text,
-          completed: false
-        }
-      ];
-    default: 
-      return state;
-  }
+function todoApp (state = {}, action) {
+  return {
+    todos: todos(
+      state.todos,
+      action
+    ),
+    visibilityFilter: visibilityFilter(
+      state.visibilityFilter,
+      action
+    ),
+    counter: counter(
+      state,
+      action
+    )
+  };
 }
-
-// Tests
-const testAddTodo = () => {
-  const stateBefore = [];
-
-  const action = {
-    type: 'ADD_TODO',
-    id: 0,
-    text: 'Learn Redux'
-  }
-
-  const stateAfter = [
-    {
-      id: 0,
-      text: 'Learn Redux',
-      completed: false
-    }
-  ]
-
-  expect(
-    todos(stateBefore, action)
-  ).toEqual(stateAfter);
-}
-testAddTodo();
-console.log('All tests passed.');
 
 // holds state, lets you dispatch actions
 let store = createStore(counter);
@@ -125,6 +150,7 @@ let App = connect(
   mapDispatchToProps
 )(Counter)
 
+
 class eggheadRedux extends React.Component {
   render () {
     return (
@@ -134,6 +160,7 @@ class eggheadRedux extends React.Component {
     )
   }
 }
+
 
 var styles = StyleSheet.create({
   container: {
@@ -173,5 +200,70 @@ var styles = StyleSheet.create({
     justifyContent: 'center'
   },
 });
+
+
+
+// Test add todos
+const testAddTodo = () => {
+  const stateBefore = [];
+  const action = {
+    type: 'ADD_TODO',
+    id: 0,
+    text: 'Learn Redux'
+  }
+  const stateAfter = [
+    {
+      id: 0,
+      text: 'Learn Redux',
+      completed: false
+    }
+  ]
+  expect(
+    todos(stateBefore, action)
+  ).toEqual(stateAfter);
+}
+
+// test toggle todos
+const testToggleTodo = () => {
+  const stateBefore = [
+    {
+      id: 0,
+      text: 'Learn Redux',
+      completed: false
+    },
+    {
+      id: 1,
+      text: 'Go shopping',
+      completed: false
+    }
+  ];
+  const action = {
+    type: 'TOGGLE_TODO',
+    id: 1
+  };
+  const stateAfter = [
+    {
+      id: 0,
+      text: 'Learn Redux',
+      completed: false
+    },
+    {
+      id: 1,
+      text: 'Go shopping',
+      completed: true
+    }
+  ];
+  
+  expect(
+    todos(stateBefore, action)
+  ).toEqual(stateAfter);
+};
+
+
+// run tests
+testAddTodo();
+testToggleTodo();
+console.log('All tests passed.');
+
 
 AppRegistry.registerComponent('eggheadRedux', () => eggheadRedux);
