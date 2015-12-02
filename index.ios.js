@@ -16,7 +16,6 @@ var {
 class Counter extends React.Component {
   render () {
     const { value, onIncreaseClick, onDecreaseClick } = this.props
-    console.log("~~~> ", this.props)
     return (
       <View style={styles.container}>
         <Text style={styles.instructions}>
@@ -47,8 +46,6 @@ class Counter extends React.Component {
 const incrementAction = {type: 'INCREMENT'}
 const decrementAction = {type: 'DECREMENT'}
 
-
-
 // todo reducer
 function todo (state = [], action) {
   switch (action.type) {
@@ -70,6 +67,7 @@ function todo (state = [], action) {
       return state;
   }
 }
+
 // todos reducer (a pure function to implement update action)
 function todos (state = [], action) {
   switch (action.type) {
@@ -85,6 +83,8 @@ function todos (state = [], action) {
   }
 };
 
+
+
 function visibilityFilter (state = 'SHOW_ALL', action) {
   switch (action.type) {
     case 'SET_VISIBILITY_FILTER':
@@ -95,44 +95,50 @@ function visibilityFilter (state = 'SHOW_ALL', action) {
 };
 
 // Reducer
-function counter (state = {count: 0}, action) {
-  console.log("state: ", state)
-  console.log("action: ", action)
+function counter (state = {}, action) {
   let count = state.count
   switch (action.type) {
     case 'INCREMENT':
-      return {count: count + 1}
+      return {
+        ...state,
+        count: count + 1
+      };
     case 'DECREMENT':
-      return {count: count - 1}
+      return {
+        ...state,
+        count: count - 1
+      };
     default:
       return state
   }
 }
 
-function todoApp (state = {}, action) {
+function fooCounter (state = {count: 0}, action) {
+  let count = state.count
+  switch (action.type) {
+    case 'INCREMENT':
+      return counter(state = {count: state.count}, action);
+    case 'DECREMENT':
+      return counter(state = {count: state.count}, action);
+    default:
+      return state
+  }
+}
+
+function barApp (state = {}, action) {
+  let count = state.count
   return {
-    todos: todos(
-      state.todos,
-      action
-    ),
-    visibilityFilter: visibilityFilter(
-      state.visibilityFilter,
-      action
-    ),
-    counter: counter(
-      state,
-      action
-    )
-  };
+    fooCounter: fooCounter(state.fooCounter, action)
+  }
 }
 
 // holds state, lets you dispatch actions
-let store = createStore(counter);
+let store = createStore(barApp);
 
 // Map Redux state to component props
 function mapStateToProps (state) {
   return {
-    value: state.count
+    value: state.fooCounter.count
   }
 }
 
